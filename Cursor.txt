@@ -1,0 +1,361 @@
+Net Core 8.02 ve C# kullanarak bir AKUT Arama Kurtarma Derneği Lojistik, Arama ve Kurtarma Operasyonları(Doğada , Kentsel, USAR, I, Cankurtaranlık, Çığ, Su üstü, Yüksek irtifa arama ve kurtarma), Takip, zimmet, yükleme, raporlama uygulmöası yazamak istiyorum.
+Bu programda Core kısmı olsun ve başka programlarda da bu kısmı kullanabileyim.Frontend kısımı Tüm işletim sistemlerinde çalışsın,Tailwindcss + Asp.net MVC ile Responsive özeliği olsun.AKUT Dashboard isimli admin paneli olsun, Chat kısmı, Message ve hatırlatıcı kısım, not alabileceğimiz takvim üzerinde ajanda kısmı olsun responsive ve dark mode ile renk seçebilme ssetting kısmı olsun.   
+Backend kısmı Core,Persistence, Application, Domain ve WebApi Katmanlarndan oluşsun.Clean Architecture ve CQRS Yaklaşımını kullanacağım.Core katmanları Frontend ve Backend için Çekirdek katman olacak. Bu arada kodları diğer projelerimde kolaylıkla kullanabilmeliyim. Boş bir solution oluştur ve ardından gerekli proje katmanlarını oluştur.
+
+Şimdi ilk önce Backend kısmı ile başlayalım.
+Backend kısmı Core.Persistence, Application, Domain ve WebApi Katmanlarndan oluşsun.Clean Architecture ve CQRS Yaklaşımını kullanacağım.Core katmanları başka projelerimde de kullanmak istiyorum.
+
+AKUTRescue/
+├── 
+│                            # Çekirdek Katmanlar
+├── AKUTRescue.Persistence/
+├── AKUTRescue.Application/
+├── AKUTRescue.Domain/
+├── AKUTRescue.Core/
+│
+├── Infrastructure/                 # Altyapı Katmanları
+│      ├── AKUTRescue.Infrastructure.Persistence/
+│      └── AKUTRescue.Infrastructure.Identity/
+│   
+│    Presentation                  # Sunum Katmanları
+│      ├── AKUTRescue.WebAPI/         # Backend API
+│      ├── AKUTRescue.WebMVC/         # Frontend (Dashboard & Portal)
+│      └── AKUTRescue.WebShared/      # Paylaşılan Web Bileşenleri
+│   
+└── Tests/                          # Test Projeleri
+     ├── AKUTRescue.UnitTests/
+     └── AKUTRescue.IntegrationTests/
+
+
+2.Adım
+
+Domain katmanında sadsece Entities klasörü olsun istiyorum. Bu klasör veritbanı varlıklarını barındıracak. Veri tabanı nesneleri 
+Core kısmında oluşturacağımız Repositories klasörüne base bir sınıfdan -Entity- üretsin.Bu Base nesnesinde Id, CreateDate, UpdateDate, DeleteDate, Status(bool) alanlarına sahip olsun.ID alanı generic ve default bir değere sahip olmalı. Öncelikle  bu temel nesenyi oluşturalım.   Domain katmanı AKUTRescue/AKUTRescue.Core zaten mevcut.  bu klasörlerin altın Repositories klasörünü oluştur.Aşağıdaki ikisini ekle. 
+
+public abstract class Entity<TId>
+{
+    public TId Id { get; set; } =default!;
+    public DateTime CreateDate { get; set; } = DateTime.UtcNow;
+    public DateTime? UpdateDate { get; set; }
+    public DateTime? DeleteDate { get; set; }
+    public string CreateBy  { get; set; }
+    public string UpdatedBy { get; set; }
+    public string DeletedBy { get; set; }
+    public bool Status { get; set; } = true;
+
+    protected Entity()
+    {
+        CreateDate = DateTime.UtcNow;
+    }
+}
+
+public interface IAsyncRepository<T> where T : Entity
+{
+    Task<T> GetByIdAsync(Guid id);
+    Task<IReadOnlyList<T>> GetAllAsync();
+    Task<T> AddAsync(T entity);
+    Task UpdateAsync(T entity);
+    Task DeleteAsync(T entity);
+}
+
+3. Adım
+ Domainde artık nesnelerimizi oluşturmaya başlayalım Bu nesneler Domain altına açılacak olan  Entities klasörüne eklenmeli. Öncelikle AKUT Arama Kurtarma derneğinin personel yapısı uygun olmalı. Gönüllülerden oluşan bu yapıda Hiyerarşik, Askeri komuta sistemi mevcuttur ve yetkilendirmeler bu şekilde yapılır. Operasyon Ekip lideri, Kocaeli Ekip Lideri ve yardımcısı, 1. Kurtarma timi 2.Arama timi 1.Köper Timi gibi isimlendirmeler var. Bu yapıya uygun özellikleri kendin verebilirsin.
+Aşağıda benim hazırladığım yapıya ilave veya çıkartma yaparak  düzenleyebilirsin. Base bir member nesenesi olmalı ve diğerleri ondan inherit edilmeli. Base sınıfında aşağıdaki gibi sade olmalı.
+ Member detay tablosunda diğer bilgiler olmalı. MemberDetail : Entity<Guid> olmalı Member: MemberDetail olmalı
+ UserId, Barcode
+      ,[FirstName]
+      ,[MiddleName]
+      ,[LastName]
+      ,[EPosta]
+      ,[AuthorityId]
+      ,[Team]
+      ,[Status]
+      ,[DateId] , [ProfilePhotoUrl]
+
+4. Adım
+Nesenelerimize ait repository işlemleri için generic bir async repository arayüzü
+oluşturmanı istiyorum. Bu her nesne için kullanılabilmeli. EntityFrameworkCore kullanacağız. 
+GetAsync, GetLisstAsync, AnyAsync, AddAsync AddRangeAsync, UpdateAsync,
+ DeleteAsync, DeleteRangeAsync operasyonları içermeli. Listeleme operasyonları sayfalama destekli olmalı.
+Bu arayüzü  Core Katmanında ki mevcut repositories klasörüne ekle. 
+
+// Sayfalama örneği
+var paginationParams = new PaginationParams 
+{ 
+    PageNumber = 1, 
+    PageSize = 10 
+};
+var pagedMembers = await _memberRepository.GetPagedListAsync(paginationParams);
+
+// Filtreleme örneği
+var activeMembers = await _memberRepository.GetAsync(m => m.Status == true);
+
+// Include örneği
+var membersWithTeam = await _memberRepository.GetAsync(
+    predicate: m => m.Status == true,
+    includeString: "Team"
+);
+
+5. Adım
+Generic repository implementasyonunnu oluşturalım . Bu implementasyon IAsyncRepository 
+interfaceni kullanacak ve EntityFreamwork Core ile çalışacak. Mevcut Core/Repositories 
+klasöründe bu işlemler olacak. İlgili klasörleri ekleyebilirsin.
+
+Bu implementasyon:
+Generic yapıda olup hem entity hem de DbContext tipini alır
+IAsyncRepository interface'ini implemente eder
+EntityFrameworkCore metodlarını kullanır
+Tracking kontrolü sağlar
+5. Include işlemleri için string ve expression tabanlı iki farklı metod sunar
+Sayfalama desteği içerir
+7. Toplu işlemler için AddRange ve DeleteRange metodlarını içerir
+Kullanım örneği:
+
+public class MemberRepository : EfRepositoryBase<Member, YourDbContext>, IMemberRepository
+{
+    public MemberRepository(YourDbContext context) : base(context)
+    {
+    }
+
+    // Özel member metodları buraya eklenebilir
+}
+Bu yapı ile tüm entity'ler için temel CRUD operasyonlarını tek bir yerden yönetebilir ve 
+gerektiğinde özel repository'ler oluşturarak ek fonksiyonellik ekleyebilirsiniz.
+
+Örnek Kullanım:
+public interface IMemberRepository : IAsyncRepository<Member, Guid>
+{
+    // Özel member metodları buraya eklenebilir
+}
+
+public class MemberRepository : EfRepositoryBase<Member, ApplicationDbContext>, IMemberRepository
+{
+    public MemberRepository(ApplicationDbContext context) : base(context)
+    {
+    }
+
+    // Özel member metodları buraya eklenebilir
+}
+6.Adım
+
+Projemizede Persistence Katmanın geçelim. Domain/Entities katmanında oluşturduğumuz Member , MemberDetail,
+Authority ve Team nesneleri için Repository implementasyonlarını yapalım. Bu nesneler ilişkili veri tabanında aynı şekilde tutuluyor.
+Kısacası bu tablolar mevcut. Bu sınıflar arasındaki ilişkileri dikkate al.
+Persistence katmanında DbContext için Contexts varlıklar arasındaki ilişkiler
+ve özelikleri yöneltmek için EntityConfigurations Repository implementasyonu için ise Repositories klasöründe 
+implementasyon yap. Clean Architecture gereği, repository arayüzlerinin application katmanında service/repository
+ arayüzlerinin application katmanında service/repositories olması gerektiğini unutma.
+Bu yapılandırma ile:
+Application katmanında repository interface'leri tanımlandı
+DbContext ve entity konfigürasyonları oluşturuldu
+Repository implementasyonları yapıldı
+İlişkiler ve kısıtlamalar tanımlandı
+Özel sorgu metodları eklendi
+Tüm bu yapı Clean Architecture prensiplerine uygun olarak oluşturuldu ve CQRS pattern'i için hazır hale getirildi.
+Bu yapılandırma:
+Clean Architecture prensiplerine uygun
+Entity ilişkileri ve kısıtlamaları tanımlı
+CQRS pattern'i için hazır
+Özel sorgu metodları eklenmiş
+Veritabanı konfigürasyonları yapılmış durumda
+
+7.Adım
+Application katmanında Features klasörü oluştur. Domain nesneleri için (Member,MemberDetail, Team vb.) alt klasöleme (çoğul isimlendirme) yaparak 
+CQRP Commands, Queries, Constans,Profiles ve Rules klasörlerini oluştur. 
+Ardından Command ve Query kodlarını yaz. Profiles kalsörü AutoMapper 
+konfigürasyonunu içermeli.Rules klasörü her nesen için iş kurallarının yazıldığı yer olmalı. Constants ise sabit değerlerimizi(örneğin mesajları) içermeli. 
+Bu yapıda:
+1. Her entity için ayrı klasör (Members, Teams, etc.)
+Her klasörde Commands, Queries, Rules alt klasörleri
+3. Her command/query için ayrı klasör ve ilgili dosyalar
+AutoMapper profilleri
+İş kuralları (BusinessRules)
+Sabit mesajlar (Constants)
+Benzer yapıyı diğer entityler için de oluşturabilirsiniz. 
+Bu örnek Member entity'si için temel CQRS yapısını göstermektedir.
+
+
+Member için Update ve Delete komutlarını oluşturalım:
+Bu komutlarda:
+UpdateMemberCommand:
+Mevcut üyenin bilgilerini günceller
+Validasyon kuralları içerir
+İş kurallarını kontrol eder
+UpdateDate'i otomatik günceller
+DeleteMemberCommand:
+Soft delete yaklaşımı kullanır (Status = false)
+DeleteDate'i otomatik günceller
+İş kurallarını kontrol eder
+Basit validasyon içerir
+Her iki komut da:
+Response nesnesi döndürür
+Validasyon kuralları içerir
+İş kurallarını kontrol eder
+MediatR pattern'ini kullanır.
+
+AKUTRescue.Application/
+├── Features/
+│   ├── Constants/
+│   │   └── Messages.cs
+│   │
+│   ├── Members/
+│   │   ├── Commands/
+│   │   │   ├── CreateMember/
+│   │   │   │   ├── CreateMemberCommand.cs
+│   │   │   │   └── CreateMemberCommandValidator.cs
+│   │   │   ├── UpdateMember/
+│   │   │   │   ├── UpdateMemberCommand.cs
+│   │   │   │   └── UpdateMemberCommandValidator.cs
+│   │   │   └── DeleteMember/
+│   │   │       ├── DeleteMemberCommand.cs
+│   │   │       └── DeleteMemberCommandValidator.cs
+│   │   ├── Queries/
+│   │   │   └── GetMemberList/
+│   │   │       └── GetMemberListQuery.cs
+│   │   └── Rules/
+│   │       └── MemberBusinessRules.cs
+│   │
+│   ├── Teams/
+│   │   ├── Commands/
+│   │   │   ├── CreateTeam/
+│   │   │   │   ├── CreateTeamCommand.cs
+│   │   │   │   └── CreateTeamCommandValidator.cs
+│   │   │   ├── UpdateTeam/
+│   │   │   │   ├── UpdateTeamCommand.cs
+│   │   │   │   └── UpdateTeamCommandValidator.cs
+│   │   │   └── DeleteTeam/
+│   │   │       ├── DeleteTeamCommand.cs
+│   │   │       └── DeleteTeamCommandValidator.cs
+│   │   ├── Queries/
+│   │   │   └── GetTeamList/
+│   │   │       └── GetTeamListQuery.cs
+│   │   └── Rules/
+│   │       └── TeamBusinessRules.cs
+│   │
+│   └── Profiles/
+│       └── MappingProfiles.cs
+│
+├── Services/
+│   └── Repositories/
+│       ├── IMemberRepository.cs
+│       ├── IMemberDetailRepository.cs
+│       ├── ITeamRepository.cs
+│       └── IAuthorityRepository.cs
+│
+└── AKUTRescue.Application.csproj
+
+Bu yapıda:
+1. Her entity için ayrı bir Features klasörü
+Her feature altında Commands, Queries ve Rules klasörleri
+3. Her command ve query için ayrı klasör
+Ortak kullanılan Constants ve Profiles klasörleri
+Repository interface'leri Services/Repositories altında
+Clean Architecture ve CQRS pattern'ine uygun organizasyon
+
+8.Adım
+Son işlemde  response ve request için ayrı Dto nesnesi kullan.
+Bu response - request SOLİD ve clean code standartlarına uygun olmalı.
+Bu standartları yakalaya bilmek için Tek Dto yerine response ve request için ayrı DTO nesneleri oluştur.
+Devamında command ve queryleri yeniden oluştur.
+
+Bu yapıda:
+1. Request ve Response için ayrı DTO'lar
+2. Liste ve tekil kayıt için ayrı Response DTO'lar
+3. AutoMapper ile DTO dönüşümleri
+4. Command ve Query'lerde DTO kullanımı
+5. Validation kuralları Request DTO'lar üzerinde
+Bu şekilde:
+Single Responsibility Principle (Her DTO'nun tek bir sorumluluğu var)
+Interface Segregation Principle (DTO'lar kullanım amacına göre ayrılmış)
+Open/Closed Principle (Yeni özellikler için mevcut DTO'ları değiştirmeden yeni DTO'lar eklenebilir)
+prensiplerine uygun bir yapı oluşturulmuş oldu.
+
+9.Adım
+Aynı işlemi Teams içinde yap
+Bu yapılandırmada:
+1. Team için ayrı Request ve Response DTO'ları
+Liste ve tekil kayıt için ayrı Response DTO'lar
+Detaylı mapping konfigürasyonları
+İlişkili verilerin DTO'larda gösterimi
+Validation kuralları
+SOLID prensiplerine uygunluk
+sağlanmış oldu.
+10. Adım
+Profiles içinde bu standatları oluştur.
+
+11.Adım 
+AKUT arama  ve kurtarma programının lojistik kısmı 
+için depo yönetimi nesnelerini oluşturup bu standartlara göre düzenle
+a. Önce Domain katmanında lojistik için gerekli entity'leri oluşturalım:
+b. Şimdi Application katmanında DTO'ları oluşturalım:
+Bu yapıda:
+1. Depo yönetimi için temel entity'ler (Warehouse, WarehouseItem, Item)
+2. İlişkili enum'lar (WarehouseType, ItemCategory, ItemStatus)
+3. CQRS pattern'ine uygun komut ve sorgular
+4. Validasyon ve iş kuralları
+5. DTO'lar ve AutoMapper konfigürasyonları
+Sistem:
+. Depo envanteri takibi
+. Malzeme kategorileri
+. Minimum stok takibi
+. Bakım gerektiren ekipmanların takibi
+. Depo kapasitesi kontrolü
+. Malzeme durumu takibi
+gibi özellikleri destekler.
+
+12.Adım
+AKUT arama  ve kurtarma programının lojistik kısmı için 
+depo yönetimi nesnelerini oluşturup bu standartlara göre düzenle
+
+a. Önce Application katmanında repository interface'ini oluşturalım:
+b. Sonra Persistence katmanında repository implementasyonunu yapalım:
+c. DbContext'e DbSet ekleyelim:
+d. Entity konfigürasyonlarını ekleyelim:
+e. Gerekli using direktiflerini (Rolu) ekleyelim:
+Bu değişikliklerle:
+1. Repository interface'i tanımlandı
+2. Repository implementasyonu yapıldı
+3. DbContext ve konfigürasyonlar eklendi
+4. Gerekli using direktifleri eklendi
+Artık WarehouseBusinessRules sınıfı IWarehouseRepository'yi
+ kullanabilir durumda
+
+
+13.Adım
+iş kurallarında BusinessException olarak dönen hataların
+yapılandırılmasını yapalım.Bu hata yönetimini Core katmanında CrossCuttingConcernsExeption altında yapacağız.
+Burada dört alt klasör oluşturalım.Handlers, HttpProblemDetails, Types ve Middlewares.
+HttpProblemsDetails Klasöründe .Net'in Problemlerini miras alan nesneler üreteceğiz.
+Business hataları için BusinessProblemDetails, validation hataları için ValidationProblemsDetails ve
+bunlara ek olarak AuthorizationProblemDetails, InternalServerErrorProblemDetails ve NotFoundProblemDetails sınıfları olsun.
+Validation'da Fluent Validation kullandığımız için validation hataları ValitationProblemDetails'de tutmamız gerekiyor.
+Types kalsöründe hata tipleri için özel sınıflar oluşturacağız. Middlewares klasöründe hataları yakalamak için
+ExceptionMiddleware, Handlers klasöründe ise abstract bir 
+ExceptionHandler sınıfı ve onu implement eden HttpExceptionHandler sınıfı oluşturacağız. 
+
+Bu yapıda:
+1. Types klasöründe:
+ a- BusinessException
+ b- ValidationException
+ c- AuthorizationException
+2. HttpProblemDetails klasöründe:
+ a- BusinessProblemDetails
+ b- ValidationProblemDetails
+ c- AuthorizationProblemDetails
+ d- InternalServerErrorProblemDetails
+ e- NotFoundProblemDetails
+3. Handlers klasöründe:
+ a- Abstract ExceptionHandler
+ b- HttpExceptionHandler implementasyonu
+4. Middlewares klasöründe:
+ a- ExceptionMiddleware
+ b- Middleware extension method
+Özellikleri:
+ a. Tüm hatalar merkezi olarak yönetilir
+ b. Her hata tipi için özel problem details sınıfları
+ c. Development/Production ortamlarına göre hata detayı
+ d. Fluent Validation entegrasyonu
+ e. RFC 7807 uyumlu problem details
+Program.cs'de middleware'i eklemek için:
+
+
