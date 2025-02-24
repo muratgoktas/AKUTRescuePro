@@ -1,3 +1,4 @@
+using AKUTRescue.Core.CrossCuttingConcerns.Exceptions.HttpProblemDetails;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
 using System;
