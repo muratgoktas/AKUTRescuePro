@@ -1,3 +1,4 @@
+namespace AKUTRescue.Application;
 public class WarehouseResponseDto
 {
     public Guid Id { get; set; }

@@ -1,3 +1,4 @@
+using AKUTRescue.Core.Repositories;
 using AKUTRescue.Domain.Entities;
 using System;
 

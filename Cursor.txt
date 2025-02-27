@@ -357,5 +357,60 @@ Bu yapıda:
  d. Fluent Validation entegrasyonu
  e. RFC 7807 uyumlu problem details
 Program.cs'de middleware'i eklemek için:
+14.Adım
+Member nesnelerimiz için Controller yazmanı istiyorum.
+Member için Queries kasörün altında GetMemberByIdQuery oluştur.
+
+MembersController'ı oluşturalım:
+Bu query'de:
+1. Query ve Handler sınıfları:
+ A. GetMemberByIdQuery: ID parametresi içeren request sınıfı
+ B. GetMemberByIdQueryHandler: Query'i işleyen handler sınıfı
+2. Dependency Injection:
+ A. IMemberRepository: Veritabanı işlemleri için
+ B. IMapper: DTO dönüşümleri için
+ C. MemberBusinessRules: İş kuralları kontrolleri için
+3. İşlem Adımları:
+ A. İş kuralı kontrolü (üyenin var olup olmadığı)
+ B. İlişkili verilerle birlikte üye bilgilerinin getirilmesi
+ C. DTO'ya dönüştürme
+4. Validation:
+ A. ID alanı için temel validation kuralı
+5.İlişkili Veriler:
+ a. Team bilgileri
+ b. Authority bilgileri
+Bu query, tek bir üyenin detaylı bilgilerini getirmek için kullanılır 
+ve CQRS pattern'ine uygun olarak tasarlanmıştır.
+15.Adım
+ControllerBase'den implament olan BaseController oluştur. 
+Bu tüm türemeler 'de Base Controllor 'ü kullan . 
+BaseController eğer Mediator yoksa HttpContext.
+RequestServices.GetService 'den Mediator'un injectionu yap.
+BaseController'ı oluşturalım:
+BaseController'da:
+ 1. Lazy Mediator injection:
+   . HttpContext.RequestServices üzerinden IMediator service'i alınır
+   . Null check ile service'in varlığı kontrol edilir
+ 2. Yardımcı metodlar:
+   . GetIpAddress(): İstemci IP adresi
+   . GetUserAgent(): İstemci tarayıcı bilgisi
+   . GetUserId(): Oturum açmış kullanıcı ID'si
+ 3. Standart API yanıtları:
+   . Success(): 200 OK
+   . Created(): 201 Created
+   . NoContent(): 204 No Content
+   . BadRequest(): 400 Bad Request
+   . NotFound(): 404 Not Found
+ 4. Tutarlı yanıt formatı:
+   . success: İşlem başarı durumu
+   . message: İşlem mesajı
+   . data: Yanıt verisi (opsiyonel)
+   . errors: Hata detayları (opsiyonel)
+Bu yapı ile tüm controller'larda:
+   . Tutarlı yanıt formatı
+   . Merkezi Mediator erişimi
+   . Ortak yardımcı metodlar
+   . Standart HTTP yanıtları
+sağlanmış olur.
 
 

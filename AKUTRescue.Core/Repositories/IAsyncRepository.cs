@@ -4,7 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
-
+using AKUTRescue.Core.Repositories;
 using Microsoft.EntityFrameworkCore.Query;
 
 public interface IAsyncRepository<T, TId> where T : Entity<TId>

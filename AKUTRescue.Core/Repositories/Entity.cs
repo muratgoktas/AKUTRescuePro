@@ -1,4 +1,6 @@
-public abstract class Entity<TId>
+namespace AKUTRescue.Core.Repositories;
+
+public abstract class Entity<TId>:IEntity<TId>
 {
     public TId Id { get; set; } = default!;
     public DateTime CreateDate { get; set; } = DateTime.UtcNow;
@@ -9,8 +11,5 @@ public abstract class Entity<TId>
     public string DeletedBy { get; set; }
     public bool Status { get; set; } = true;
 
-    protected Entity()
-    {
-        CreateDate = DateTime.UtcNow;
-    }
-} 
+    protected Entity() => CreateDate = DateTime.UtcNow;
+}

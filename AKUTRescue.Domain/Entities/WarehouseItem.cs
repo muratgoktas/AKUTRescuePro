@@ -1,3 +1,5 @@
+using AKUTRescue.Core.Repositories;
+
 public class WarehouseItem : Entity<Guid>
 {
     public Guid WarehouseId { get; set; }

@@ -1,3 +1,4 @@
+namespace AKUTRescue.Application;
 public class CreateWarehouseRequestDto
 {
     public string Name { get; set; }

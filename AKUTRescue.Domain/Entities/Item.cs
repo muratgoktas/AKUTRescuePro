@@ -1,3 +1,5 @@
+using AKUTRescue.Core.Repositories;
+
 public class Item : Entity<Guid>
 {
     public string Name { get; set; }

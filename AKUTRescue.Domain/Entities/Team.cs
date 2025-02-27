@@ -1,8 +1,10 @@
 
-namespace AKUTRescue.Domain.Entities;
-   
+using AKUTRescue.Core.Repositories;
 
-    public class Team : Entity<Guid>
+namespace AKUTRescue.Domain.Entities;
+
+
+public class Team : Entity<Guid>
     {
         public string Name { get; set; }
         public string Code { get; set; }

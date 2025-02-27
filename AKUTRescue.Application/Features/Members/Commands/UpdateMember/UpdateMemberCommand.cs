@@ -3,9 +3,7 @@ using AKUTRescue.Application.Features.Members.Rules;
 using AKUTRescue.Application.Services.Repositories;
 using AutoMapper;
 using FluentValidation;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
+
 
 namespace AKUTRescue.Application.Features.Members.Commands.UpdateMember
 {
@@ -18,6 +16,7 @@ namespace AKUTRescue.Application.Features.Members.Commands.UpdateMember
         public Guid TeamId { get; set; }
         public Guid AuthorityId { get; set; }
         public bool Status { get; set; }
+        public UpdateMemberRequestDto RequestDto { get; set; }
     }
 
     public class UpdatedMemberResponse

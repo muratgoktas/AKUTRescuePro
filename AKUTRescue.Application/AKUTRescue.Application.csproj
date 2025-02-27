@@ -16,7 +16,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AKUTRescue.Domain\AKUTRescue.Domain.csproj" />
-    <ProjectReference Include="..\AKUTRescue.Core\AKUTRescue.Core.csproj" />
   </ItemGroup>
 
 </Project>
