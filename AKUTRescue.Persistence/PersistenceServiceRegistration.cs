@@ -13,9 +13,11 @@ public static class PersistenceServiceRegistration
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        // DbContext
         services.AddDbContext<AKUTRescueDbContext>(options =>
-            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+            options.UseSqlServer(
+                configuration.GetConnectionString("DefaultConnection"),
+                b => b.MigrationsAssembly("AKUTRescue.Persistence")
+            ));
 
         // Repositories
         services.AddScoped<IMemberRepository, MemberRepository>();

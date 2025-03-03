@@ -21,7 +21,7 @@ public class MembersController : BaseController
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(Guid id)
+    public async Task<IActionResult> GetById([FromRoute] Guid id)
     {
         var query = new GetMemberByIdQuery { Id = id };
         var result = await Mediator.Send(query);

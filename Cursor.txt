@@ -413,4 +413,37 @@ Bu yapı ile tüm controller'larda:
    . Standart HTTP yanıtları
 sağlanmış olur.
 
+16.Adım (Not :Kontrol et ApplicationServiceRegistration yoksa bunu yaz! 
+Varsa Atla bu adımı)
+
+Biz tüm katmanları yazdık ve herşey yolunda. 
+Fakat katmanların arası dependency injection için nesnelerin
+instance üretimleri yazılmadı. Persistence ve  Application için ayrı ayrı 
+ServiceRegistration sınıfları oluştur ve bunları programa.cs dosyasnd çağır.
+
+17. Adım
+a. AKUTRescue.WebAPI de sağ tıkla ve  NuGet => Browse => Microsoft.EntityFrameworkCore.Tools 8.02v kur.
+ Kurduktan sonra PersistenceServiceRegistration.cs içeriği aşağıdaki gibi olacak.
+
+public static class PersistenceServiceRegistration
+{
+    public static IServiceCollection AddPersistenceServices(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.AddDbContext<AKUTRescueDbContext>(options =>
+            options.UseSqlServer(
+                configuration.GetConnectionString("DefaultConnection"),
+                b => b.MigrationsAssembly("AKUTRescue.Persistence")
+            ));
+
+        // ... diğer repository kayıtları ...
+
+        return services;
+    }
+}
+
+b. Tools=>NuGet Package Manager  => Package manager Consol'a aaşğıdaki satırları yaz.
+c. Add-Migration InitialCreate -Context AKUTRescueDbContext -Project AKUTRescue.Persistence
+d. Update-Database -Context AKUTRescueDbContext
 
