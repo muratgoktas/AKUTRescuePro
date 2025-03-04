@@ -5,4 +5,5 @@ public class CreateMemberRequestDto
     public string Email { get; set; }
     public Guid TeamId { get; set; }
     public Guid AuthorityId { get; set; }
+    public string Barcode { get; set; }
 } 

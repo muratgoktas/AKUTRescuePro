@@ -13,26 +13,13 @@ public class MemberMappingProfile : Profile
             .ForMember(dest => dest.TeamName,
                 opt => opt.MapFrom(src => src.Team.Name))
             .ForMember(dest => dest.AuthorityName,
-                opt => opt.MapFrom(src => src.Authority.Name));
+                opt => opt.MapFrom(src => src.Authority.Name))
+            .ForMember(dest => dest.Barcode,
+                opt => opt.MapFrom(src => src.Barcode));
+                
 
         CreateMap<IPaginate<Member>, IPaginate<MemberListResponseDto>>()
-            .ForMember(dest => dest.Items,
-                           opt => opt.MapFrom(src => src.Items.Select(x => new MemberListResponseDto
-                           {
-                               Id = x.Id,
-                               FirstName = x.FirstName,
-                               LastName = x.LastName,
-                               FullName = $"{x.FirstName} {x.LastName}",
-                               Email = x.Email,
-                               PhoneNumber = x.ProfilePhotoUrl,
-                               TeamId = x.TeamId,
-                               TeamName = x.Team.Name,
-                               AuthorityId = x.AuthorityId,
-                               AuthorityName = x.Authority.Name,
-                               CreateDate = x.CreateDate,
-                               UpdateDate = x.UpdateDate,
-                               Status = x.Status,
-                               Barcode =x.Barcode
-                           }).ToList()));
+            .ForMember(dest=>dest.Items,
+            opt=>opt.MapFrom(src=>src.Items));
     }
 }

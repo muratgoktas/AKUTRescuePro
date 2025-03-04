@@ -6,10 +6,10 @@ public abstract class Entity<TId>:IEntity<TId>
     public DateTime CreateDate { get; set; } = DateTime.UtcNow;
     public DateTime? UpdateDate { get; set; }
     public DateTime? DeleteDate { get; set; }
-    public string CreateBy { get; set; }
-    public string UpdatedBy { get; set; }
-    public string DeletedBy { get; set; }
-    public bool Status { get; set; } = true;
+     public bool Status { get; set; } = true;
+    public string CreatedByWho { get; set; }= "CreatedNoName";
+    public string UpdatedByWho { get; set; }= "UpdatedNoName";
+    public string DeletedByWho { get; set; } = "DeletedNoName";
 
     protected Entity() => CreateDate = DateTime.UtcNow;
 }

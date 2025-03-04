@@ -16,9 +16,10 @@ namespace AKUTRescue.Core.Repositories
         DateTime CreateDate { get; set; }
         DateTime? UpdateDate { get; set; }
         DateTime? DeleteDate { get; set; }
-        string CreateBy { get; set; }
-        string UpdatedBy { get; set; }
-        string DeletedBy { get; set; }
+        string CreatedByWho { get; set; }
+        string UpdatedByWho { get; set; }
+        string DeletedByWho { get; set; }
         bool Status { get; set; }
+
     }
 }

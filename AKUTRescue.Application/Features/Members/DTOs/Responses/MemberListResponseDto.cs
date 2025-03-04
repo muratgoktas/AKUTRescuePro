@@ -15,4 +15,7 @@ public class MemberListResponseDto
     public string Barcode { get; set; }
     public DateTime CreateDate { get; set; }
     public DateTime? UpdateDate { get; set; }
+    public string CreateByWho { get; set; }
+    public string DeletedByWho { get; set; }
+    public string UpdatedByWho { get; set; }
 } 
