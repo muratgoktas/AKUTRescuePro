@@ -447,3 +447,39 @@ b. Tools=>NuGet Package Manager  => Package manager Consol'a aaşğıdaki satır
 c. Add-Migration InitialCreate -Context AKUTRescueDbContext -Project AKUTRescue.Persistence
 d. Update-Database -Context AKUTRescueDbContext
 
+AKUTRescue/
+├── Core (~300 satır)
+│   ├── CrossCuttingConcerns/Exceptions/ (~200 satır)
+│   └── Persistence/Paging/ (~100 satır)
+│
+├── Domain (~200 satır)
+│   └── Entities/ 
+│       ├── Member.cs (~40 satır)
+│       ├── MemberDetail.cs (~30 satır)
+│       ├── Team.cs (~30 satır)
+│       ├── Warehouse.cs (~40 satır)
+│       ├── WarehouseItem.cs (~30 satır)
+│       └── Item.cs (~30 satır)
+│
+├── Application (~800 satır)
+│   └── Features/
+│       ├── Members/ (~400 satır)
+│       │   ├── Commands/ (~200 satır)
+│       │   ├── Queries/ (~100 satır)
+│       │   └── DTOs/ (~100 satır)
+│       └── Warehouses/ (~400 satır)
+│           ├── Commands/ (~200 satır)
+│           ├── Queries/ (~100 satır)
+│           └── DTOs/ (~100 satır)
+│
+├── Persistence (~300 satır)
+│   ├── Contexts/ (~100 satır)
+│   ├── EntityConfigurations/ (~150 satır)
+│   └── Repositories/ (~50 satır)
+│
+└── WebAPI (~200 satır)
+    ├── Controllers/ (~150 satır)
+    └── Program.cs (~50 satır)
+
+Toplam: ~1800 satır kod
+
